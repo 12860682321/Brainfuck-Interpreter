@@ -1,21 +1,19 @@
 /*
-    This is a Brain fuck interpreter
-
+    This is a Brainfuck interpreter
 */
 
 #include <iostream>
 #include <string>
 #include <stdexcept>
 
-char strip[20];
+char strip[1000];
 std::string command;
-unsigned int instructPtr;
+int instructPtr;
 char* dataptr=strip;
-int bracketCounter;
 
 void showStrip() {
     std::cout<<"Strip: ";
-    for(int i = 0; i < 20; ++i){
+    for(int i = 0; i < 50; ++i){
         std::cout<<(int)strip[i]<<" ";
     }
     std::cout<<"\n       ";
@@ -26,20 +24,22 @@ void showStrip() {
     std::cout<<"Commands: "<<command<<"\n";
 }
 
-unsigned int gotoCorrespondingClosingBracket(){
+void gotoCorrespondingClosingBracket(){
+    int bracketCounter = 1;
     while(++instructPtr < command.size()){
         if(command[instructPtr] == '[') ++bracketCounter;
         if(command[instructPtr] == ']') --bracketCounter;
-        if(!bracketCounter) return bracketCounter;
+        if(!bracketCounter) return;
     }
     throw std::runtime_error("Brackets not balanced!");
 }
 
-unsigned int gotoCorrespondingOpeningBracket(){
+void gotoCorrespondingOpeningBracket(){
+    int bracketCounter = -1;
     while(--instructPtr >= 0){
         if(command[instructPtr] == '[') ++bracketCounter;
         if(command[instructPtr] == ']') --bracketCounter;
-        if(!bracketCounter) return bracketCounter;
+        if(!bracketCounter) return;
     }
     throw std::runtime_error("Brackets not balanced!");
 }
@@ -53,10 +53,10 @@ void interpretCommand(char c){
             --dataptr;
             break;
         case '+':
-            ++*dataptr;
+            ++(*dataptr);
             break;
         case '-':
-            --*dataptr;
+            --(*dataptr);
             break;
         case '.':
             std::cout<<"\n\n";
@@ -71,16 +71,14 @@ void interpretCommand(char c){
             std::cout<<"\n";
             break;
         case '[':
-            ++bracketCounter;
-            if(!*dataptr){
-                instructPtr = gotoCorrespondingClosingBracket();
+            if(!(*dataptr)){
+                gotoCorrespondingClosingBracket();
                 break;
             }
             break;
         case ']':
-            --bracketCounter;
             if(*dataptr) {
-                instructPtr = gotoCorrespondingOpeningBracket();
+                gotoCorrespondingOpeningBracket();
                 break;
             }
             break;
@@ -89,7 +87,6 @@ void interpretCommand(char c){
             break;
         default:
             std::cout<<"Not a valid command\n";
-
     }
 }
 
@@ -106,3 +103,4 @@ int main(){
     }
     return 0;
 }
+//++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]
