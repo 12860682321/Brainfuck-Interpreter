@@ -97,7 +97,7 @@ int main(){
     std::cout<<"BrainFuck interpreter\n\n";
     showStrip();
     std::cout<<"\n";
-    while(std::cin>>command){
+    while(std::getline(std::cin,command)){
         for(instructPtr = 0; instructPtr < command.size(); ++instructPtr){
             interpretCommand(command[instructPtr]);
         }
