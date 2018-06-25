@@ -5,28 +5,49 @@
 #include <iostream>
 #include <string>
 #include <stdexcept>
-#include <iomanip>
+#include <fstream>
 
 char tape[100];
-std::string command;
-unsigned int PC;         // This is the program counter
+std::string command = ""; 
+unsigned int PC;           // This is the program counter
 char* dataPtr = tape;
 
 void interpretCommand(char c);
 void showTape();
 void gotoCorrespondingBracket(bool findClosingBracket);
 
-int main(){
+int main(int argc, char* argv[]){
+    bool fromFile = false;
+    std::fstream infile;
+    if(argc > 2) { 
+        std::cout<<"Usage: ./Brainfuck-Interpreter file\n"; 
+        return 0; 
+    }
+    if(argc == 2) fromFile = true; 
+    if(fromFile) infile.open(argv[1],std::ios_base::in);
     std::cout<<"BrainFuck interpreter\n\n";
     showTape();
     std::cout<<"\n";
-    while(std::getline(std::cin,command)){
-        for(PC = 0; PC < command.size(); ++PC){
-            interpretCommand(command[PC]);
+    std::string input;
+    int bracketCounter = 0;
+    if(!fromFile) std::cout<<"Command:";
+    while((fromFile)? std::getline(infile, input) : std::getline(std::cin, input)){
+        input = input.substr(0,input.find("//"));
+        for(unsigned int i = 0; i < input.size(); ++i){
+            if(input[i] == '[' || input[i] == ']') (input[i] == '[')? ++bracketCounter : --bracketCounter;
+            command += input[i];
+            if(input[i] == ',') (fromFile)? command += std::cin.get() : command += input[++i] ;
         }
-        showTape();
-        std::cout<<std::setbase(16)<<"data ptr"<<dataPtr<<"\n";
+        if(!bracketCounter){
+            for(PC = 0; PC < command.size(); ++PC){
+                interpretCommand(command[PC]);
+            }
+            command = "";
+            if(!fromFile) showTape();
+            if(!fromFile) std::cout<<"Command: ";
+        } 
     }
+    if(fromFile) infile.close();
     return 0;
 }
 
@@ -61,7 +82,6 @@ void showTape() {
         std::cout<<(int)tape[i]<<" ";
     }
     std::cout<<"\nData Pointer is at cell: "<<(dataPtr - tape)<<"\n";
-    std::cout<<"Commands: "<<command<<"\n";
 }
 
 void gotoCorrespondingBracket(bool findClosingBracket){
